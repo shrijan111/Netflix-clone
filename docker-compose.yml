@@ -1,6 +1,9 @@
-build:
-  context: .
-  dockerfile: Dockerfile
-  args:
-    TMDB_V3_API_KEY: "${VITE_APP_TMDB_V3_API_KEY}"
+version: "3.8"
 
+services:
+  netflix-clone:
+    container_name: netflix-clone
+    image: la000la/netflix-clone:latest
+    ports:
+      - "8080:80"
+    restart: always
