@@ -5,5 +5,5 @@ services:
     container_name: netflix-clone
     image: la000la/netflix-clone:latest
     ports:
-      - "8080:80"
+      - "8081:80"
     restart: always
