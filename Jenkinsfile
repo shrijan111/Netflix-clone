@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "netflix-clone"
+        DOCKER_IMAGE = "shrijan111/netflix-clone:latest"
+        DOCKER_CREDS = credentials('dockerhub-creds')
         TMDB_V3_API_KEY = credentials('tmdb-api-key')
     }
 
@@ -11,7 +12,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/YOUR_GITHUB_USERNAME/Netflix-clone.git'
+                    url: 'https://github.com/shrijan111/Netflix-clone.git'
             }
         }
 
@@ -20,16 +21,33 @@ pipeline {
                 sh '''
                 docker build \
                   --build-arg TMDB_V3_API_KEY=$TMDB_V3_API_KEY \
-                  -t $IMAGE_NAME .
+                  -t $DOCKER_IMAGE .
                 '''
             }
         }
 
-        stage('Run Container (Docker Compose)') {
+        stage('Docker Login') {
+            steps {
+                sh '''
+                echo "$DOCKER_CREDS_PSW" | docker login -u "$DOCKER_CREDS_USR" --password-stdin
+                '''
+            }
+        }
+
+        stage('Push Image to Docker Hub') {
+            steps {
+                sh '''
+                docker push $DOCKER_IMAGE
+                '''
+            }
+        }
+
+        stage('Deploy with Docker Compose') {
             steps {
                 sh '''
                 docker compose down || true
-                docker compose up -d --build
+                docker compose pull
+                docker compose up -d
                 '''
             }
         }
@@ -44,3 +62,4 @@ pipeline {
         }
     }
 }
+
