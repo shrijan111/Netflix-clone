@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "shrijan111/netflix-clone:latest"
-        DOCKER_CREDS = credentials('dockerhub-creds')
+        DOCKER_IMAGE = "la000la/netflix-clone:latest"
         TMDB_V3_API_KEY = credentials('tmdb-api-key')
     }
 
@@ -26,19 +25,18 @@ pipeline {
             }
         }
 
-        stage('Docker Login') {
+        stage('Docker Login & Push') {
             steps {
-                sh '''
-                echo "$DOCKER_CREDS_PSW" | docker login -u "$DOCKER_CREDS_USR" --password-stdin
-                '''
-            }
-        }
-
-        stage('Push Image to Docker Hub') {
-            steps {
-                sh '''
-                docker push $DOCKER_IMAGE
-                '''
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh '''
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker push $DOCKER_IMAGE
+                    '''
+                }
             }
         }
 
@@ -62,4 +60,5 @@ pipeline {
         }
     }
 }
+
 
